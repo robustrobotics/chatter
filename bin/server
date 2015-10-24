@@ -19,16 +19,29 @@ def github_destination():
         logging.info("Chattering! GET")
         return "Success", 200
     elif flask.request.method == 'POST':
-        logging.info("Chattering! POST")
         payload = flask.request.get_json()
         event_type = flask.request.headers.get('X-Github-Event')
-        logging.info("Event type is {}".format(event_type))
-	issue = payload['issue']['number']
-        logging.info("Received a comment on issue number {}".format(issue))
-	if 'pull_request' in payload['issue']:
-            logging.info("Issue is a pull request")
-	logging.info("Comment is {}".format(payload['comment']['body']))
-        return "Post acknowledged",204
+        if event_type == 'issue_comment':
+            if 'pull_request' not in payload['issue']:
+                logging.info("Issue is not a pull request; nothing to do")
+            else:
+                # Check if code review is complete
+                token = config['github_auth_token']
+                issue = payload['issue']['number']
+                try:
+                    bot = chatter.bot.JenkinsBot(token)
+                    reviewed_by = bot.pr_reviewed_by(issue)
+                    if reviewed_by is not None:
+                        description = "Pull request reviewed by @{}".format(reviewed_by['login'])
+                        logging.log(description)
+                        logging.log(json.dumps(payload, indent=2))
+                except RuntimeError:
+                    logging.exception()
+        elif event_type == 'pull_request':
+            logging.info("New pull request.")
+        else:
+            logging.info("Unexpected event type {}".format(event_type))
+        return "Post acknowledged", 204
 
 @app.route('/chatter/pr/<num>')
 def check_pr(num=None):
