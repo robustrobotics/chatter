@@ -91,8 +91,15 @@ def main():
     """ Main function """
     logging.basicConfig(level=logging.DEBUG)
 
+    if os.environ.get('ghprbActualCommit') is not None:
+        default_sha = os.environ.get('ghprbActualCommit')
+    elif os.environ.get('GIT_COMMIT') is not None:
+        default_sha = os.environ.get('GIT_COMMIT')
+    else
+        default_sha = None
+
     parser = argparse.ArgumentParser()
-    parser.add_argument("--sha", default=os.environ.get('GIT_COMMIT'),
+    parser.add_argument("--sha", default=default_sha,
             help="SHA hash of the commit for which to set status")
     parser.add_argument("--pr", help="Pull request number to comment on",
         default=os.environ.get('ghprbPullId'))
