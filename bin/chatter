@@ -36,7 +36,7 @@ def build(args):
     """ Set build status based on args """
     descriptions = {
             'success': "Build succeeded.",
-            'failed': "Build failed.",
+            'failure': "Build failed.",
             'error': "There was an error building.",
             'pending': "Build results pending."}
     set_status(args, 'build', descriptions)
@@ -45,7 +45,7 @@ def tests(args):
     """ Set tests status based on args """
     descriptions = {
             'success': "All tests passed.",
-            'failed': "Some tests failed.",
+            'failure': "Some tests failed.",
             'error': "There was an error testing.",
             'pending': "Test results pending."}
     set_status(args, 'tests', descriptions)
@@ -54,16 +54,16 @@ def code_review(args):
     """ Set code review status based on args """
     descriptions = {
         'success': "Code review completed.",
-        'failed': "Code was rejected by review.",
+        'failure': "Code was rejected by review.",
         'error': "There was an error reviewing code?",
         'pending': "Code review pending."}
 
     if args.state == 'query':
         # Query the github server for the code review state
         if args.pr is None:
-            logging.error("""No commit hash available. Either pass a
-                    pull request via --pr, or set the environment
-                    variable 'ghprbPullId'.""")
+            logging.error("""No pull request number available. Either
+                pass a pull request via --pr, or set the environment
+                variable 'ghprbPullId'.""")
             sys.exit(1)
 
         logging.info('Pull request sha: {}'.format(args.sha))
