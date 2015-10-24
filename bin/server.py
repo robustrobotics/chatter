@@ -5,7 +5,7 @@ import yaml
 import logging
 import flask
 
-#import jenkins_bot
+import chatter
 
 config=yaml.load(file('/opt/chatter/config.yaml','r'))
 app = flask.Flask(__name__)
