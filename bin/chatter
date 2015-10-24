@@ -72,8 +72,7 @@ def code_review(args):
 
         if reviewed_by is not None:
             args.state = 'success'
-            descriptions[args.state] = 'Code review completed by @{}'
-                .format(reviewed_by['login'])
+            descriptions[args.state] = 'Code review completed by @{}'.format(reviewed_by['login'])
             logging.info(descriptions[args.state])
         else:
             args.state = 'pending'
