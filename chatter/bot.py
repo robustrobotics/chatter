@@ -105,6 +105,6 @@ class JenkinsBot(object):
         self_review = None
 
         for comment in comments:
-            if re.search(pattern, comment['body'], re.IGNORECASE) and
+            if re.search(pattern, comment['body'], re.IGNORECASE) and \
                 comment['user']['id'] != pr['user']['id']:
                 return comment['user']
