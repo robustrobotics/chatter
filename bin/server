@@ -7,7 +7,7 @@ import flask
 
 import chatter
 
-config=yaml.load(file('/opt/chatter/config.yaml','r'))
+config=yaml.load(file('/var/lib/chatter/config.yaml','r'))
 app = flask.Flask(__name__)
 logging.basicConfig(filename=config['log_file'], level=logging.INFO)
 
