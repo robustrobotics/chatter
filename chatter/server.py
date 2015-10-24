@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 """ Simple server to automate chatter with github """
 
-import os
+import yaml
 import logging
 import flask
 
+config=yaml.load(file('/opt/chatter/config.yaml','r'))
 app = flask.Flask(__name__)
-logging.basicConfig(filename=os.environ['CHATTER_LOG_FILE'],level=logging.INFO)
+logging.basicConfig(filename=config['log_file'], level=logging.INFO)
 
 @app.route('/chatter/')
 def index():
