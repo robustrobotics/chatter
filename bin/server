@@ -6,7 +6,7 @@ import logging
 import flask
 import json
 
-import chatter
+import chatter.bot
 
 config=yaml.load(file('/var/lib/chatter/config.yaml','r'))
 app = flask.Flask(__name__)
