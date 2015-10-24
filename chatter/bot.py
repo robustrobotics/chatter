@@ -63,13 +63,23 @@ class JenkinsBot(object):
         status, response = issue.comments.get()
         if status != 200:
             logging.warning("Couldn't read comments (returned %d)", status)
-            logging.warning("Response: {}".format(response, indent=2))
+            logging.warning("Response: {}".format(json.dumps(response,
+                indent=2)))
             return None
         else:
-            for index, comment in enumerate(response):
-                match = re.search(pattern, comment['body'], re.IGNORECASE)
-                if match:
-                    logging.info("Comment #{} matched pattern: {}"
-                            .format(index, comment['body']))
-                    return match
+            return (comment for comment in response if re.search(pattern, comment['body'], re.IGNORECASE))
+
+    def print_pull_sha(self, pr_number):
+        status, response = self.repo.pulls[pr_number].get()
+        logging.info(response['head']['sha'])
+
+    def pull_request_author(self, pr_number):
+        """ Get the author of a pull request """
+        status, response = self.repo.pulls[pr_number].get()
+        if status != 200:
+            logging.warning("Couldn't fetch pull request issue data (returned %d)", status)
+            logging.warning("Response: {}".format(json.dumps(response,
+                indent=2)))
             return None
+        else:
+            return response['user']
