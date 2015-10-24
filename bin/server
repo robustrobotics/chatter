@@ -11,6 +11,7 @@ import chatter
 config=yaml.load(file('/var/lib/chatter/config.yaml','r'))
 app = flask.Flask(__name__)
 logging.basicConfig(filename=config['log_file'], level=logging.INFO)
+logging.info("============================================================")
 
 @app.route('/chatter/', methods=['GET','POST'])
 def chatter():
@@ -21,6 +22,7 @@ def chatter():
         logging.info("Chattering! POST")
         payload = flask.request.get_json()
         event_type = flask.request.headers.get('X-Github-Event')
+        logging.info("Event type is {}".format(event_type))
 	issue = payload['issue']['number']
         logging.info("Received a comment on issue number {}".format(issue))
 	if 'pull_request' in payload['issue']:
@@ -30,8 +32,10 @@ def chatter():
 
 @app.route('/chatter/pr/<num>')
 def check_pr(num=None):
+    logging.info("Check pr")
     token = config['github_auth_token']
     bot = chatter.bot.JenkinsBot(token)
+    logging.info("Bot created")
     pr = bot.get_pull_request(num)
     if pr is None:
         return "Couldn't grab that PR, sorry.", 200
