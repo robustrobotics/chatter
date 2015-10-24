@@ -95,7 +95,7 @@ def main():
         default_sha = os.environ.get('ghprbActualCommit')
     elif os.environ.get('GIT_COMMIT') is not None:
         default_sha = os.environ.get('GIT_COMMIT')
-    else
+    else:
         default_sha = None
 
     parser = argparse.ArgumentParser()
