@@ -11,7 +11,7 @@ config = {
     'download_url': 'https://github.com/wrvb/chatter/archive/master.zip',
     'author_email': 'wrvb@mit.edu',
     'version': '0.0.1',
-    'install_requires': ['nose'],
+    'install_requires': [],
     'packages': ['chatter'],
     'scripts': ['bin/chatter', 'bin/server']
 }
