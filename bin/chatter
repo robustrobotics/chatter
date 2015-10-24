@@ -68,11 +68,11 @@ def code_review(args):
 
         logging.info('Pull request sha: {}'.format(args.sha))
         bot = chatter.bot.JenkinsBot(args.token)
-        reviewed_by = bot.pr_reviewed_by(args.pr)
+        comment, args.sha = bot.pr_reviewed_by(args.pr)
 
-        if reviewed_by is not None:
+        if comment is not None:
             args.state = 'success'
-            descriptions[args.state] = 'Code review completed by @{}'.format(reviewed_by['login'])
+            descriptions[args.state] = 'Code review completed by @{}'.format(comment['user']['login'])
             logging.info(descriptions[args.state])
         else:
             args.state = 'pending'

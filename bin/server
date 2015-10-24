@@ -28,13 +28,25 @@ def github_destination():
                 # Check if code review is complete
                 token = config['github_auth_token']
                 issue = payload['issue']['number']
+                descriptions = {
+                    'success': "Code review completed.",
+                    'failure': "Code was rejected by review.",
+                    'error': "There was an error reviewing code?",
+                    'pending': "Code review pending."}
                 try:
                     bot = chatter.bot.JenkinsBot(token)
-                    reviewed_by = bot.pr_reviewed_by(issue)
-                    if reviewed_by is not None:
-                        description = "Pull request reviewed by @{}".format(reviewed_by['login'])
+                    comment, sha = bot.pr_reviewed_by(issue)
+                    if comment is not None:
+                        description = "Pull request reviewed by @{}".format(
+                                comment['user']['login'])
                         logging.info(description)
-                        logging.info(json.dumps(payload, indent=2))
+                        status = {
+                                'context': 'code_review',
+                                'state': 'success',
+                                'target_url': comment['html_url'],
+                                'description': description}
+                        bot.set_status(sha, status)
+
                 except RuntimeError:
                     logging.exception()
         elif event_type == 'pull_request':

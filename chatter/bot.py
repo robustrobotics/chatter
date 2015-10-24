@@ -107,4 +107,5 @@ class JenkinsBot(object):
         for comment in comments:
             if re.search(signoff_pattern, comment['body'], re.IGNORECASE) and \
                 comment['user']['id'] != pr['user']['id']:
-                return comment['user']
+                return comment, pr['head']['sha']
+        return None, pr['head']['sha']
