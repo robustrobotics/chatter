@@ -5,7 +5,7 @@ import os
 import logging
 import flask
 
-app = Flask(__name__)
+app = flask.Flask(__name__)
 logging.basicConfig(filename=os.environ['CHATTER_LOG_FILE'],level=logging.INFO)
 
 @app.route('/chatter/')
