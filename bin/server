@@ -14,7 +14,7 @@ logging.basicConfig(filename=config['log_file'], level=logging.INFO)
 logging.info("============================================================")
 
 @app.route('/chatter/', methods=['GET','POST'])
-def chatter():
+def github_destination():
     if flask.request.method == 'GET':
         logging.info("Chattering! GET")
         return "Success", 200
