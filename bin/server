@@ -32,12 +32,14 @@ def github_destination():
 
 @app.route('/chatter/pr/<num>')
 def check_pr(num=None):
-    logging.info("Check pr")
     token = config['github_auth_token']
-    bot = chatter.bot.JenkinsBot(token)
-    logging.info("Bot created")
-    pr = bot.get_pull_request(num)
-    if pr is None:
-        return "Couldn't grab that PR, sorry.", 200
+    try:
+        bot = chatter.bot.JenkinsBot(token)
+        reviewed_by = bot.pr_reviewed_by(num)
+    except RuntimeError:
+        logging.exception()
+
+    if reviewed_by is None:
+        return "Pull request has not been reviewed"
     else:
-        return json.dumps(pr, indent=2), 200
+        return "Pull request reviewed by @{}".format(reviewed_by['login'])

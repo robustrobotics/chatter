@@ -79,17 +79,32 @@ class JenkinsBot(object):
         else:
             return response
 
-    def print_pull_sha(self, pr_number):
-        status, response = self.repo.pulls[pr_number].get()
-        logging.info(response['head']['sha'])
+    def pr_reviewed_by(self, pr_number):
+        """ Determine if a PR has been reviewed """
 
-    def pull_request_author(self, pr_number):
-        """ Get the author of a pull request """
         status, response = self.repo.pulls[pr_number].get()
         if status != 200:
-            logging.warning("Couldn't fetch pull request issue data (returned %d)", status)
+            logging.warning("Couldn't fetch pull request data (returned %d)", status)
             logging.warning("Response: {}".format(json.dumps(response,
                 indent=2)))
-            return None
-        else:
-            return response['user']
+            raise RuntimeError()
+        pr = response
+
+        status, response = self.repo.issues[pr_number].comments.get()
+        if status != 200:
+            logging.warning("Couldn't fetch issue comments (returned %d)", status)
+            logging.warning("Response: {}".format(json.dumps(response,
+                indent=2)))
+            raise RuntimeError()
+        comments = response
+
+        pr_author = pr['user']
+        signoff_pattern = "lgtm|looks good to me"
+
+        reviewed_by = None
+        self_review = None
+
+        for comment in comments:
+            if re.search(pattern, comment['body'], re.IGNORECASE) and
+                comment['user']['id'] != pr['user']['id']:
+                return comment['user']
