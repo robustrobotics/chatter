@@ -69,6 +69,16 @@ class JenkinsBot(object):
         else:
             return (comment for comment in response if re.search(pattern, comment['body'], re.IGNORECASE))
 
+    def get_pull_request(self, pr_number):
+        status, response = self.repo.pulls[pr_number].get()
+        if status != 200:
+            logging.warning("Couldn't fetch pull request issue data (returned %d)", status)
+            logging.warning("Response: {}".format(json.dumps(response,
+                indent=2)))
+            return None
+        else:
+            return response
+
     def print_pull_sha(self, pr_number):
         status, response = self.repo.pulls[pr_number].get()
         logging.info(response['head']['sha'])

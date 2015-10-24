@@ -4,6 +4,7 @@
 import yaml
 import logging
 import flask
+import json
 
 import chatter
 
@@ -26,3 +27,13 @@ def chatter():
             logging.info("Issue is a pull request")
 	logging.info("Comment is {}".format(payload['comment']['body']))
         return "Post acknowledged",204
+
+@app.route('/chatter/pr/<num>')
+def check_pr(num=None):
+    token = config['github_auth_token']
+    bot = chatter.bot.JenkinsBot(token)
+    pr = bot.get_pull_request(num)
+    if pr is None:
+        return "Couldn't grab that PR, sorry.", 200
+    else:
+        return json.dumps(pr, indent=2), 200
