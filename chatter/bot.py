@@ -17,14 +17,14 @@ logging.getLogger(__name__).addHandler(NullHandler())
 
 class JenkinsBot(object):
     """ Abstract some of the http api interactions """
-    def __init__(self, token, organization="robustrobotics",
-            repo_name="jenkins_test"):
+    def __init__(self, token, organization, repo_name):
         self.github = agithub.Github(token=token)
         self.repo_name = repo_name
         self.repo = self.github.repos[organization][self.repo_name]
 
     def set_status(self, sha, status):
         """ Set the status of the PR """
+        logging.info("sha={}".format(sha))
         code, response = self.repo.statuses[sha].post(body=status)
         if code != 201:
             logging.warning("Couldn't post status (returned {})"

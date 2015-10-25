@@ -4,17 +4,18 @@
 import yaml
 import logging
 import flask
-import json
 
 import chatter.bot
 
-config=yaml.load(file('/var/lib/chatter/config.yaml','r'))
-app = flask.Flask(__name__)
-logging.basicConfig(filename=config['log_file'], level=logging.INFO)
+CONFIG = yaml.load(file('/var/lib/chatter/CONFIG.yaml', 'r'))
+logging.basicConfig(filename=CONFIG['log_file'], level=logging.INFO)
 logging.info("============================================================")
 
-@app.route('/chatter/', methods=['GET','POST'])
+app = flask.Flask(__name__)
+
+@app.route('/chatter/', methods=['GET', 'POST'])
 def github_destination():
+    """ Main API route handler """
     if flask.request.method == 'GET':
         logging.info("Chattering! GET")
         return "Success", 200
@@ -26,15 +27,11 @@ def github_destination():
                 logging.info("Issue is not a pull request; nothing to do")
             else:
                 # Check if code review is complete
-                token = config['github_auth_token']
+                token = CONFIG['github_auth_token']
                 issue = payload['issue']['number']
-                descriptions = {
-                    'success': "Code review completed.",
-                    'failure': "Code was rejected by review.",
-                    'error': "There was an error reviewing code?",
-                    'pending': "Code review pending."}
                 try:
-                    bot = chatter.bot.JenkinsBot(token)
+                    bot = chatter.bot.JenkinsBot(token, CONFIG['organization'],
+                            CONFIG['repository'])
                     comment, sha = bot.pr_reviewed_by(issue)
                     if comment is not None:
                         description = "Pull request reviewed by @{}".format(
@@ -48,7 +45,7 @@ def github_destination():
                         bot.set_status(sha, status)
 
                 except RuntimeError:
-                    logging.exception()
+                    logging.exception("Error checking PR status")
         elif event_type == 'pull_request':
             logging.info("New pull request.")
         else:
@@ -57,14 +54,16 @@ def github_destination():
 
 @app.route('/chatter/pr/<num>')
 def check_pr(num=None):
-    token = config['github_auth_token']
+    """ Check the status of a pull request """
+    token = CONFIG['github_auth_token']
     try:
-        bot = chatter.bot.JenkinsBot(token)
-        reviewed_by = bot.pr_reviewed_by(num)
+        bot = chatter.bot.JenkinsBot(token, CONFIG['organization'],
+                CONFIG['repository'])
+        comment, _ = bot.pr_reviewed_by(num)
     except RuntimeError:
-        logging.exception()
+        logging.exception("Error fetching comments")
 
-    if reviewed_by is None:
+    if comment is None:
         return "Pull request has not been reviewed"
     else:
-        return "Pull request reviewed by @{}".format(reviewed_by['login'])
+        return "Pull request reviewed by @{}".format(comment['user']['login'])

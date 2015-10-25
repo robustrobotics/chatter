@@ -5,7 +5,6 @@ import os
 import sys
 import logging
 import argparse
-import json
 
 import chatter.bot
 
@@ -30,7 +29,8 @@ def set_status(args, context, descriptions):
     if args.url is not None:
         status['target_url'] = args.url
 
-    bot = chatter.bot.JenkinsBot(args.token).set_status(sha, status)
+    bot = chatter.bot.JenkinsBot(args.token, args.org, args.repo)
+    bot.set_status(sha, status)
 
 def build(args):
     """ Set build status based on args """
@@ -67,25 +67,28 @@ def code_review(args):
             sys.exit(1)
 
         logging.info('Pull request sha: {}'.format(args.sha))
-        bot = chatter.bot.JenkinsBot(args.token)
+        bot = chatter.bot.JenkinsBot(args.token, args.org, args.repo)
         comment, args.sha = bot.pr_reviewed_by(args.pr)
 
         if comment is not None:
             args.state = 'success'
-            descriptions[args.state] = 'Code review completed by @{}'.format(comment['user']['login'])
+            descriptions[args.state] = 'Code review completed by @{}'.format(
+                    comment['user']['login'])
             logging.info(descriptions[args.state])
         else:
             args.state = 'pending'
 
     set_status(args, 'code_review', descriptions)
 
-def comment(args):
+def post_comment(args):
+    """ Post a comment """
     if args.pr is None:
         logging.error("""No commit hash available. Either pass a
                 pull request via --pr, or set the environment
                 variable 'ghprbPullId'.""")
         sys.exit(1)
-    chatter.bot.JenkinsBot(args.token).post_comment(args.pr, args.body)
+    bot = chatter.bot.JenkinsBot(args.token, args.org, args.repo)
+    bot.post_comment(args.pr, args.body)
 
 def main():
     """ Main function """
@@ -101,6 +104,10 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--sha", default=default_sha,
             help="SHA hash of the commit for which to set status")
+    parser.add_argument("--org", help="Organization which owns the repository",
+        default=os.environ.get('GITHUB_ORGANIZATION'))
+    parser.add_argument("--repo", help="Repository to operate on",
+        default=os.environ.get('GITHUB_REPOSITORY'))
     parser.add_argument("--pr", help="Pull request number to comment on",
         default=os.environ.get('ghprbPullId'))
     parser.add_argument("--url", help="URL to link to this update",
@@ -133,7 +140,7 @@ def main():
 
     comment_parser = subparsers.add_parser("comment",
             help="Post a comment to the pull request")
-    comment_parser.set_defaults(command=comment)
+    comment_parser.set_defaults(command=post_comment)
     comment_parser.add_argument("body", help="String to post")
 
     args = parser.parse_args()
@@ -141,6 +148,16 @@ def main():
     if args.token is None:
         logging.error("No authorization token supplied; please set"
                 "environment variable GITHUB_AUTH_TOKEN")
+        sys.exit(1)
+
+    if args.repo is None:
+        logging.error("No github repository supplied; please set"
+                "environment variable GITHUB_REPOSITORY")
+        sys.exit(1)
+
+    if args.org is None:
+        logging.error("No github organization supplied; please set"
+                "environment variable GITHUB_ORGANIZATION")
         sys.exit(1)
 
     args.command(args)
