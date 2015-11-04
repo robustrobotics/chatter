@@ -50,6 +50,15 @@ def tests(args):
             'pending': "Test results pending."}
     set_status(args, 'tests', descriptions)
 
+def install(args):
+    """ Set install status based on args """
+    descriptions = {
+            'success': "Install step succeeded.",
+            'failure': "Install step failed.",
+            'error': "There was an error installing.",
+            'pending': "Install results pending."}
+    set_status(args, 'install', descriptions)
+
 def code_review(args):
     """ Set code review status based on args """
     descriptions = {
@@ -136,6 +145,13 @@ def main():
             help="Set tests check status")
     tests_parser.set_defaults(command=tests)
     tests_parser.add_argument("state", help="State to set",
+            choices=['success', 'pending', 'error', 'failure'])
+
+    # Parser to set test status
+    install_parser = subparsers.add_parser("install",
+            help="Set install check status")
+    install_parser.set_defaults(command=install)
+    install_parser.add_argument("state", help="State to set",
             choices=['success', 'pending', 'error', 'failure'])
 
     comment_parser = subparsers.add_parser("comment",
