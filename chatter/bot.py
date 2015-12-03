@@ -90,7 +90,7 @@ class JenkinsBot(object):
             raise RuntimeError()
         pr = response
 
-        status, response = self.repo.issues[pr_number].comments.get()
+        status, response = self.repo.issues[pr_number].comments.get(per_page=100)
         if status != 200:
             logging.warning("Couldn't fetch issue comments (returned %d)", status)
             logging.warning("Response: {}".format(json.dumps(response,
